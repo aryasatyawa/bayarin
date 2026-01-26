@@ -1,0 +1,238 @@
+{
+    "info": {
+        "name": "Bayarin API",
+        "description": "Digital Wallet & Payment Gateway API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8080/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"phone\": \"081234567890\",\n  \"full_name\": \"John Doe\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"identifier\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "User",
+            "item": [
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/user/profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "user",
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Set PIN",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"pin\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/user/pin",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "user",
+                                "pin"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Transaction",
+            "item": [
+                {
+                    "name": "Topup",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"amount\": 10000000,\n  \"channel_code\": \"BCA_VA\",\n  \"idempotency_key\": \"{{$randomUUID}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/transaction/topup",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "transaction",
+                                "topup"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
+
+
+Final Project Structure
+```
+bayarin/
+├── cmd/
+│   └── api/
+│       └── main.go
+├── internal/
+│   ├── config/
+│   │   └── config.go
+│   ├── domain/
+│   │   ├── user.go
+│   │   ├── wallet.go
+│   │   ├── transaction.go
+│   │   ├── ledger.go
+│   │   └── errors.go
+│   ├── repository/
+│   │   ├── user_repository.go
+│   │   ├── wallet_repository.go
+│   │   ├── transaction_repository.go
+│   │   └── ledger_repository.go
+│   ├── usecase/
+│   │   ├── user_usecase.go
+│   │   ├── wallet_usecase.go
+│   │   └── transaction_usecase.go
+│   ├── handler/
+│   │   ├── user_handler.go
+│   │   ├── wallet_handler.go
+│   │   ├── transaction_handler.go
+│   │   ├── health_handler.go
+│   │   └── router.go
+│   ├── middleware/
+│   │   ├── auth.go
+│   │   ├── logger.go
+│   │   └── cors.go
+│   └── pkg/
+│       ├── crypto/
+│       │   └── hash.go
+│       ├── database/
+│       │   └── postgres.go
+│       ├── redis/
+│       │   └── redis.go
+│       ├── jwt/
+│       │   └── jwt.go
+│       ├── validator/
+│       │   └── validator.go
+│       ├── response/
+│       │   └── response.go
+│       ├── errors/
+│       │   └── mapper.go
+│       ├── logger/
+│       │   └── logger.go
+│       └── testutil/
+│           └── helper.go
+├── migrations/
+│   ├── 001_init_schema.up.sql
+│   └── 001_init_schema.down.sql
+├── scripts/
+│   └── setup_db.sql
+├── docs/
+│   └── bayarin.postman_collection.json
+├── .env
+├── .gitignore
+├── go.mod
+├── go.sum
+├── Makefile
+└── README.md
