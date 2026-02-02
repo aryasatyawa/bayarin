@@ -44,9 +44,11 @@ type RedisConfig struct {
 }
 
 type JWTConfig struct {
-	Secret       string
-	ExpireHours  int
-	RefreshHours int
+	Secret               string
+	ExpireHours          int
+	RefreshHours         int
+	IdleTimeoutMinutes   int
+	AbsoluteTimeoutHours int
 }
 
 type AppConfig struct {
@@ -65,7 +67,9 @@ func Load() (*Config, error) {
 	maxLifetime, _ := strconv.Atoi(getEnv("DB_MAX_LIFETIME", "300"))
 	redisDB, _ := strconv.Atoi(getEnv("REDIS_DB", "0"))
 	redisPoolSize, _ := strconv.Atoi(getEnv("REDIS_POOL_SIZE", "10"))
-	jwtExpire, _ := strconv.Atoi(getEnv("JWT_EXPIRE_HOURS", "24"))
+	jwtExpire, _ := strconv.Atoi(getEnv("JWT_EXPIRE_HOURS", "12"))
+	idleTimeout, _ := strconv.Atoi(getEnv("JWT_IDLE_TIMEOUT_MINUTES", "15"))
+	absoluteTimeout, _ := strconv.Atoi(getEnv("JWT_ABSOLUTE_TIMEOUT_HOURS", "12"))
 	currencyMinor, _ := strconv.Atoi(getEnv("CURRENCY_MINOR_UNIT", "100"))
 
 	cfg := &Config{
@@ -93,9 +97,11 @@ func Load() (*Config, error) {
 			PoolSize: redisPoolSize,
 		},
 		JWT: JWTConfig{
-			Secret:       getEnv("JWT_SECRET", "bayarin-secret-key"),
-			ExpireHours:  jwtExpire,
-			RefreshHours: jwtExpire * 7, // 7x JWT expire
+			Secret:               getEnv("JWT_SECRET", "bayarin-secret-key"),
+			ExpireHours:          jwtExpire,
+			RefreshHours:         jwtExpire * 7, // 7x JWT expire
+			IdleTimeoutMinutes:   idleTimeout,
+			AbsoluteTimeoutHours: absoluteTimeout,
 		},
 		App: AppConfig{
 			Name:              getEnv("APP_NAME", "Bayarin"),

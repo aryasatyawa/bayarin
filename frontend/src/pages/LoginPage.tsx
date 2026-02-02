@@ -1,17 +1,21 @@
 import React from 'react';
-import { Wallet } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '@/components/auth/LoginForm';
 
 export const LoginPage: React.FC = () => {
+    const navigate = useNavigate();
+
     return (
-        <div className="min-h-screen bg-linear-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-linear-to-br from-white to-blue-800 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-lg mb-4">
-                        <Wallet className="w-8 h-8 text-blue-600" />
-                    </div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Bayarin</h1>
+                    <h1
+                        className="text-4xl font-bold text-white mb-2 tracking-tighter cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => navigate('/information')}
+                    >
+                        Bayarin<span className="text-blue-600">.</span>
+                    </h1>
                     <p className="text-blue-100">Digital Wallet & Payment Gateway</p>
                 </div>
 

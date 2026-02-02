@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"github.com/aryasatyawa/bayarin/internal/middleware"
 	"github.com/aryasatyawa/bayarin/internal/pkg/jwt"
-	"github.com/gin-gonic/gin"
 )
 
 type Router struct {
@@ -12,7 +13,12 @@ type Router struct {
 	walletHandler      *WalletHandler
 	transactionHandler *TransactionHandler
 	healthHandler      *HealthHandler
-	tokenManager       *jwt.TokenManager
+
+	// Admin
+	adminHandler     *AdminHandler
+	dashboardHandler *DashboardHandler
+
+	tokenManager *jwt.TokenManager
 }
 
 func NewRouter(
@@ -20,6 +26,8 @@ func NewRouter(
 	walletHandler *WalletHandler,
 	transactionHandler *TransactionHandler,
 	healthHandler *HealthHandler,
+	adminHandler *AdminHandler,
+	dashboardHandler *DashboardHandler,
 	tokenManager *jwt.TokenManager,
 ) *Router {
 	return &Router{
@@ -28,6 +36,8 @@ func NewRouter(
 		walletHandler:      walletHandler,
 		transactionHandler: transactionHandler,
 		healthHandler:      healthHandler,
+		adminHandler:       adminHandler,
+		dashboardHandler:   dashboardHandler,
 		tokenManager:       tokenManager,
 	}
 }
@@ -37,24 +47,26 @@ func (r *Router) Setup() *gin.Engine {
 	r.engine.Use(middleware.CORSMiddleware())
 	r.engine.Use(middleware.LoggerMiddleware())
 
-	// API v1
+	// =====================
+	// API v1 - USER
+	// =====================
 	v1 := r.engine.Group("/api/v1")
 	{
-		// Health check (public)
+		// Health (public)
 		v1.GET("/health", r.healthHandler.Health)
 
-		// Auth routes (public)
+		// Auth (public)
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/register", r.userHandler.Register)
 			auth.POST("/login", r.userHandler.Login)
 		}
 
-		// Protected routes
+		// Protected user routes
 		protected := v1.Group("")
 		protected.Use(middleware.AuthMiddleware(r.tokenManager))
 		{
-			// User routes
+			// User
 			user := protected.Group("/user")
 			{
 				user.GET("/profile", r.userHandler.GetProfile)
@@ -62,7 +74,7 @@ func (r *Router) Setup() *gin.Engine {
 				user.POST("/pin/verify", r.userHandler.VerifyPIN)
 			}
 
-			// Wallet routes
+			// Wallet
 			wallet := protected.Group("/wallet")
 			{
 				wallet.GET("/balance", r.walletHandler.GetBalance)
@@ -70,7 +82,7 @@ func (r *Router) Setup() *gin.Engine {
 				wallet.GET("/:wallet_id/history", r.walletHandler.GetHistory)
 			}
 
-			// Transaction routes
+			// Transaction
 			transaction := protected.Group("/transaction")
 			{
 				transaction.POST("/topup", r.transactionHandler.Topup)
@@ -78,6 +90,44 @@ func (r *Router) Setup() *gin.Engine {
 				transaction.GET("/:id", r.transactionHandler.GetTransaction)
 				transaction.GET("/history", r.transactionHandler.GetUserTransactions)
 			}
+		}
+	}
+
+	// =====================
+	// API v1 - ADMIN
+	// =====================
+	admin := r.engine.Group("/api/v1/admin")
+	{
+		// Admin auth (public)
+		adminAuth := admin.Group("/auth")
+		{
+			adminAuth.POST("/login", r.adminHandler.Login)
+		}
+
+		// Admin protected
+		adminProtected := admin.Group("")
+		adminProtected.Use(middleware.AdminAuthMiddleware(r.tokenManager))
+		{
+			// Dashboard
+			dashboard := adminProtected.Group("/dashboard")
+			{
+				dashboard.GET("/overview", r.dashboardHandler.GetOverview)
+				dashboard.GET("/daily-stats", r.dashboardHandler.GetDailyStats)
+				dashboard.GET("/transaction-summary", r.dashboardHandler.GetTransactionSummary)
+			}
+
+			// Admin management (SUPER ADMIN only)
+			admins := adminProtected.Group("/admins")
+			admins.Use(middleware.RequireSuperAdmin())
+			{
+				admins.POST("", r.adminHandler.CreateAdmin)
+				admins.GET("", r.adminHandler.ListAdmins)
+				admins.GET("/:id", r.adminHandler.GetAdmin)
+				admins.PATCH("/:id/status", r.adminHandler.UpdateAdminStatus)
+			}
+
+			// Audit logs
+			adminProtected.GET("/audit-logs", r.adminHandler.GetAuditLogs)
 		}
 	}
 

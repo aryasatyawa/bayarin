@@ -33,4 +33,12 @@ var (
 	ErrForbidden         = errors.New("forbidden")
 	ErrInternalServer    = errors.New("internal server error")
 	ErrDatabaseOperation = errors.New("database operation failed")
+
+	ErrAdminNotFound          = errors.New("admin not found")
+	ErrAdminAlreadyExist      = errors.New("admin already exists")
+	ErrInvalidUsername        = errors.New("invalid username")
+	ErrInvalidCredentials     = errors.New("invalid credentials")
+	ErrAdminNotActive         = errors.New("admin is not active")
+	ErrInsufficientPermission = errors.New("insufficient permission")
+	ErrSelfAction             = errors.New("cannot perform action on self")
 )

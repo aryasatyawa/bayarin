@@ -21,18 +21,27 @@ import (
 )
 
 func main() {
+	// =====================
 	// Load configuration
+	// =====================
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to load configuration")
 	}
 
+	// =====================
 	// Initialize logger
+	// =====================
 	logger.Init(cfg.Server.Env)
 	log.Info().Msg("🚀 Starting Bayarin API Server")
-	log.Info().Str("version", cfg.App.Version).Str("env", cfg.Server.Env).Msg("Configuration loaded")
+	log.Info().
+		Str("version", cfg.App.Version).
+		Str("env", cfg.Server.Env).
+		Msg("Configuration loaded")
 
-	// Initialize database
+	// =====================
+	// Database
+	// =====================
 	db, err := database.NewPostgresDB(&cfg.Database)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to database")
@@ -44,7 +53,9 @@ func main() {
 	}()
 	log.Info().Msg("✅ Database connected")
 
-	// Initialize Redis
+	// =====================
+	// Redis
+	// =====================
 	redisClient, err := redis.NewRedisClient(&cfg.Redis)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to Redis")
@@ -56,18 +67,31 @@ func main() {
 	}()
 	log.Info().Msg("✅ Redis connected")
 
-	// Initialize JWT token manager
+	// =====================
+	// JWT
+	// =====================
 	tokenManager := jwt.NewTokenManager(cfg.JWT.Secret, cfg.JWT.ExpireHours)
 	log.Info().Msg("✅ JWT token manager initialized")
 
-	// Initialize repositories
+	// =====================
+	// Repositories (USER)
+	// =====================
 	userRepo := repository.NewUserRepository(db.DB)
 	walletRepo := repository.NewWalletRepository(db.DB)
 	transactionRepo := repository.NewTransactionRepository(db.DB)
 	ledgerRepo := repository.NewLedgerRepository(db.DB)
-	log.Info().Msg("✅ Repositories initialized")
+	log.Info().Msg("✅ User repositories initialized")
 
-	// Initialize usecases
+	// =====================
+	// Repositories (ADMIN) - NEW
+	// =====================
+	adminRepo := repository.NewAdminRepository(db.DB)
+	auditLogRepo := repository.NewAuditLogRepository(db.DB)
+	log.Info().Msg("✅ Admin repositories initialized")
+
+	// =====================
+	// Usecases (USER)
+	// =====================
 	userUsecase := usecase.NewUserUsecase(
 		db.DB,
 		userRepo,
@@ -75,10 +99,12 @@ func main() {
 		tokenManager,
 		cfg,
 	)
+
 	walletUsecase := usecase.NewWalletUsecase(
 		walletRepo,
 		ledgerRepo,
 	)
+
 	transactionUsecase := usecase.NewTransactionUsecase(
 		db.DB,
 		userRepo,
@@ -87,37 +113,73 @@ func main() {
 		ledgerRepo,
 		cfg,
 	)
-	log.Info().Msg("✅ Usecases initialized")
 
-	// Initialize handlers
+	log.Info().Msg("✅ User usecases initialized")
+
+	// =====================
+	// Usecases (ADMIN) - NEW
+	// =====================
+	adminUsecase := usecase.NewAdminUsecase(
+		db.DB,
+		adminRepo,
+		auditLogRepo,
+		tokenManager,
+		cfg,
+	)
+
+	dashboardUsecase := usecase.NewDashboardUsecase(
+		db.DB,
+		userRepo,
+		walletRepo,
+		transactionRepo,
+	)
+
+	log.Info().Msg("✅ Admin usecases initialized")
+
+	// =====================
+	// Handlers (USER)
+	// =====================
 	userHandler := handler.NewUserHandler(userUsecase)
 	walletHandler := handler.NewWalletHandler(walletUsecase)
 	transactionHandler := handler.NewTransactionHandler(transactionUsecase)
 	healthHandler := handler.NewHealthHandler(db, redisClient)
-	log.Info().Msg("✅ Handlers initialized")
+	log.Info().Msg("✅ User handlers initialized")
 
-	// Setup router
+	// =====================
+	// Handlers (ADMIN) - NEW
+	// =====================
+	adminHandler := handler.NewAdminHandler(adminUsecase)
+	dashboardHandler := handler.NewDashboardHandler(dashboardUsecase)
+	log.Info().Msg("✅ Admin handlers initialized")
+
+	// =====================
+	// Router (UPDATED)
+	// =====================
 	router := handler.NewRouter(
 		userHandler,
 		walletHandler,
 		transactionHandler,
 		healthHandler,
+		adminHandler,     // NEW
+		dashboardHandler, // NEW
 		tokenManager,
 	)
 	engine := router.Setup()
 	log.Info().Msg("✅ Router configured")
 
-	// Setup HTTP server
+	// =====================
+	// HTTP Server
+	// =====================
 	serverAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 	srv := &http.Server{
 		Addr:           serverAddr,
 		Handler:        engine,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20, // 1 MB
+		MaxHeaderBytes: 1 << 20,
 	}
 
-	// Start server in goroutine
+	// Start server
 	go func() {
 		log.Info().Str("address", serverAddr).Msg("🌐 Server starting")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -126,17 +188,19 @@ func main() {
 	}()
 
 	log.Info().Msg("✅ Server started successfully")
-	log.Info().Msgf("📍 API available at: http://%s/api/v1", serverAddr)
-	log.Info().Msgf("💚 Health check: http://%s/api/v1/health", serverAddr)
+	log.Info().Msgf("📍 API USER    : http://%s/api/v1", serverAddr)
+	log.Info().Msgf("📍 API ADMIN   : http://%s/api/v1/admin", serverAddr)
+	log.Info().Msgf("💚 Health     : http://%s/api/v1/health", serverAddr)
 
-	// Graceful shutdown
+	// =====================
+	// Graceful Shutdown
+	// =====================
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
 	log.Info().Msg("🛑 Shutting down server...")
 
-	// Shutdown with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

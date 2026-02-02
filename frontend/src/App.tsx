@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 
 // Hooks
 import { useLogoutListener } from '@/hooks/useLogoutListener';
+import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 
 // Components
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -19,6 +20,7 @@ import { TransferPage } from '@/pages/TransferPage';
 import { HistoryPage } from '@/pages/HistoryPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { InformationPage } from '@/pages/InformationPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 // Create QueryClient
@@ -32,16 +34,22 @@ const queryClient = new QueryClient({
   },
 });
 
-// Wrapper component to use hooks
-const AppContent: React.FC = () => {
+// Inner component that uses Router-dependent hooks
+const RouterContent: React.FC = () => {
   // Listen for unauthorized logout events
   useLogoutListener();
 
+  // Track idle timeout and absolute session timeout
+  useIdleTimeout();
+
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/information" replace />} />
+
+        {/* Information/Landing Page */}
+        <Route path="/information" element={<InformationPage />} />
 
         {/* Public routes */}
         <Route
@@ -140,6 +148,15 @@ const AppContent: React.FC = () => {
           },
         }}
       />
+    </>
+  );
+};
+
+// Wrapper component to use hooks
+const AppContent: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <RouterContent />
     </BrowserRouter>
   );
 };

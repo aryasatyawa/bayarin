@@ -38,7 +38,7 @@ export const Navbar: React.FC = () => {
                         <div className="flex items-center gap-2 pl-6 border-l border-blue-400">
                             <button
                                 onClick={() => navigate('/profile')}
-                                className="p-2 rounded-lg hover:bg-white hover:bg-opacity-20 transition-all duration-200 hover:shadow-lg transform hover:scale-110 active:scale-95"
+                                className="p-2 rounded-lg hover:bg-blue-500 hover:bg-opacity-20 transition-all duration-200 hover:shadow-lg transform hover:scale-110 active:scale-95"
                                 title="Profil"
                             >
                                 <User className="w-5 h-5 text-white" />
