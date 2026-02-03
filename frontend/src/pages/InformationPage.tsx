@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { Button } from '../components/common/Button';
 import {
     ShieldCheck,
     Zap,
     QrCode,
     CreditCard,
-    ChevronRight,
     Menu,
     X,
     Smartphone,
@@ -14,6 +14,8 @@ import {
     Lock,
     Server,
     CheckCircle2,
+    ArrowRight,
+    Bell
 } from 'lucide-react';
 
 // --- TYPES & DATA ---
@@ -73,12 +75,14 @@ const STEPS: StepItem[] = [
 
 // --- ANIMATION VARIANTS ---
 
+const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
 const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: { duration: 0.6, ease: 'easeOut' },
+        transition: { duration: 0.6, ease: EASE_OUT },
     },
 };
 
@@ -186,92 +190,235 @@ const Navbar = () => {
     );
 };
 
-const Hero = () => {
-    return (
-        <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden bg-slate-50">
-            {/* Background Decor */}
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-50 to-transparent pointer-events-none" />
-            <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
+export function Hero() {
+    const containerVariants: Variants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.15,
+                delayChildren: 0.2,
+            },
+        },
+    };
 
-            <div className="container mx-auto px-6 relative z-10">
-                <div className="max-w-3xl mx-auto text-center">
-                    <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+    const itemVariants: Variants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.6,
+                ease: EASE_OUT,
+            },
+        },
+    };
+
+    const floatingAnimation = {
+        y: [-10, 10, -10],
+        transition: {
+            duration: 4,
+            repeat: Infinity,
+            ease: EASE_OUT,
+        },
+    };
+
+    return (
+        <section className="relative pt-24 pb-16 lg:pt-24 lg:pb-10 overflow-hidden">
+            {/* Background Blobs */}
+            <div className="absolute top-0 right-0 -z-10 w-[600px] h-[600px] bg-blue-50 rounded-full blur-3xl opacity-50 translate-x-1/3 -translate-y-1/4" />
+            <div className="absolute bottom-0 left-0 -z-10 w-[400px] h-[400px] bg-indigo-50 rounded-full blur-3xl opacity-50 -translate-x-1/3 translate-y-1/4" />
+
+            <div className="container mx-auto px-4 md:px-6">
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                    {/* Left Content */}
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="max-w-2xl"
+                    >
                         <motion.div
-                            variants={fadeInUp}
-                            className="inline-block px-4 py-1.5 mb-6 rounded-full bg-blue-100/50 border border-blue-200 text-blue-700 text-sm font-semibold tracking-wide"
+                            variants={itemVariants}
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-sm font-medium mb-6"
                         >
-                            New: International Transfers Support 🚀
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                            </span>
+                            Now available in 30+ countries
                         </motion.div>
 
                         <motion.h1
-                            variants={fadeInUp}
-                            className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6"
+                            variants={itemVariants}
+                            className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 mb-6 leading-[1.1]"
                         >
-                            Fast, Secure, and <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
-                                Reliable Digital Wallet
-                            </span>
+                            Your Digital Wallet,{' '}
+                            <span className="text-blue-600">Simplified.</span>
                         </motion.h1>
 
                         <motion.p
-                            variants={fadeInUp}
-                            className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed max-w-2xl mx-auto"
+                            variants={itemVariants}
+                            className="text-lg md:text-xl text-slate-600 mb-8 max-w-lg leading-relaxed"
                         >
-                            Solusi pembayaran modern untuk kebutuhan personal dan bisnis. Terintegrasi dengan sistem
-                            perbankan global dengan standar keamanan tertinggi.
+                            Send money, pay bills, and track your spending with the most secure
+                            and intuitive e-wallet experience designed for modern life.
                         </motion.p>
 
                         <motion.div
-                            variants={fadeInUp}
-                            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                            variants={itemVariants}
+                            className="flex flex-col sm:flex-row gap-4"
                         >
-                            <Link
-                                to="/register"
-                                className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold shadow-lg shadow-blue-600/20 hover:bg-blue-700 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 group"
-                            >
+                            <Button size="lg" className="group">
                                 Get Started
-                                <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                            </Link>
-                            <a
-                                href="#features"
-                                className="w-full sm:w-auto px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all text-center"
-                            >
-                                View Documentation
-                            </a>
+                                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            </Button>
+
+                            <Button size="lg" variant="secondary">
+                                Learn More
+                            </Button>
+                        </motion.div>
+
+                        <motion.div
+                            variants={itemVariants}
+                            className="mt-10 flex items-center gap-6 text-sm text-slate-500"
+                        >
+                            <div className="flex items-center gap-2">
+                                <ShieldCheck className="h-5 w-5 text-blue-600" />
+                                <span>Bank-grade security</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <CreditCard className="h-5 w-5 text-blue-600" />
+                                <span>No hidden fees</span>
+                            </div>
                         </motion.div>
                     </motion.div>
-                </div>
 
-                {/* Dashboard Preview Mockup */}
-                <motion.div
-                    initial={{ opacity: 0, y: 60 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.8 }}
-                    className="mt-20 mx-auto max-w-5xl rounded-2xl bg-white shadow-2xl border border-slate-200/60 p-2 md:p-4"
-                >
-                    <div className="aspect-[16/9] bg-slate-100 rounded-xl overflow-hidden relative group">
-                        <div className="absolute inset-0 flex items-center justify-center text-slate-400">
-                            {/* Simplified Mockup Representation */}
-                            <div className="text-center">
-                                <div className="w-full h-full absolute inset-0 bg-gradient-to-tr from-slate-100 to-slate-200 opacity-50"></div>
-                                <div className="relative z-10 flex flex-col items-center gap-4">
-                                    <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-2">
-                                        <span className="text-2xl font-bold text-blue-600">B</span>
+                    {/* Right Content – Phone Mockup */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                        className="relative lg:h-[600px] flex items-center justify-center"
+                    >
+                        {/* Phone Body */}
+                        <div className="relative w-[300px] h-[600px] bg-slate-900 rounded-[3rem] border-8 border-slate-900 shadow-2xl overflow-hidden z-10">
+                            <div className="absolute inset-0 bg-white flex flex-col">
+                                {/* Status Bar */}
+                                <div className="h-6 bg-slate-900 flex justify-center items-center">
+                                    <div className="w-12 h-3 bg-black rounded-full" />
+                                </div>
+
+                                {/* Header */}
+                                <div className="p-6 bg-blue-600 text-white pb-8 rounded-b-[2rem]">
+                                    <div className="flex justify-between mb-6">
+                                        <div className="w-8 h-8 rounded-full bg-white/20" />
+                                        <div className="w-8 h-8 rounded-full bg-white/20" />
                                     </div>
-                                    <p className="font-medium">Dashboard Interface Preview</p>
+                                    <div className="text-sm opacity-80">Total Balance</div>
+                                    <div className="text-3xl font-bold mt-1">$12,450.00</div>
+                                </div>
+
+                                {/* Body */}
+                                <div className="p-6 flex-1 bg-slate-50">
+                                    <div className="flex justify-between gap-4 mb-6">
+                                        {['Send', 'Request', 'Top Up', 'More'].map((label) => (
+                                            <div key={label} className="flex flex-col items-center gap-2">
+                                                <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center">
+                                                    <div className="w-5 h-5 bg-blue-100 rounded-full" />
+                                                </div>
+                                                <span className="text-[10px] font-medium text-slate-600">
+                                                    {label}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                            Recent Activity
+                                        </div>
+
+                                        {[
+                                            { name: 'Netflix', amount: '14.99', color: 'orange' },
+                                            { name: 'Spotify', amount: '9.99', color: 'green' },
+                                            { name: 'Amazon', amount: '45.50', color: 'purple' },
+                                        ].map((item) => (
+                                            <div
+                                                key={item.name}
+                                                className="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div
+                                                        className={`w-10 h-10 rounded-full bg-${item.color}-100 text-${item.color}-600 flex items-center justify-center font-bold`}
+                                                    >
+                                                        {item.name[0]}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-bold text-slate-800">
+                                                            {item.name}
+                                                        </div>
+                                                        <div className="text-xs text-slate-500">
+                                                            Subscription
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-sm font-bold text-slate-900">
+                                                    -${item.amount}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </motion.div>
+
+                        {/* Floating Cards */}
+                        <motion.div
+                            animate={floatingAnimation}
+                            className="absolute top-20 -left-12 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center gap-3"
+                        >
+                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                                <ArrowRight className="w-5 h-5 -rotate-45" />
+                            </div>
+                            <div>
+                                <div className="text-xs text-slate-500">Payment Received</div>
+                                <div className="text-sm font-bold text-slate-900">+$250.00</div>
+                            </div>
+                        </motion.div>
+
+                        <motion.div
+                            animate={{
+                                y: [10, -10, 10],
+                                transition: {
+                                    duration: 5,
+                                    repeat: Infinity,
+                                    ease: EASE_OUT,
+                                    delay: 1,
+                                },
+                            }}
+                            className="absolute bottom-32 -right-8 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center gap-3"
+                        >
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                <Bell className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <div className="text-xs text-slate-500">New Reward</div>
+                                <div className="text-sm font-bold text-slate-900">
+                                    5% Cashback
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                </div>
             </div>
         </section>
     );
-};
+}
 
 const Features = () => {
     return (
-        <section id="features" className="py-24 bg-white relative">
+        <section id="features" className="py-20 bg-white relative">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Why Choose Bayarin?</h2>

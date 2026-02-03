@@ -156,7 +156,7 @@ CREATE INDEX idx_admin_session_expires ON admin_sessions (expires_at);
 -- ============================================
 -- SEED DATA: Super Admin
 -- ============================================
--- Password: admin123 (hash via bcrypt)
+-- Password: passwordceo  (hash via bcrypt)
 -- IMPORTANT: Ganti password setelah first login!
 INSERT INTO
     admins (
@@ -170,10 +170,10 @@ INSERT INTO
     )
 VALUES (
         uuid_generate_v4 (),
-        'superadmin',
-        'admin@bayarin.com',
-        '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIq7E0u4LW', -- admin123
-        'Super Administrator',
+        'userceo',
+        'ceo@bayarin.com',
+        '$2a$12$s1341Gly0w01D1Ey4pQ5buJGIbN.EdXOiIXC3OGhpMaAn6z/dTxCq',
+        'CEO Super Admin',
         'super_admin',
         'active'
     );

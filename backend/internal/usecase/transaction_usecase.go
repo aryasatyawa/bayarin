@@ -434,8 +434,3 @@ func (uc *transactionUsecase) GetUserTransactions(ctx context.Context, userID uu
 
 	return details, nil
 }
-
-// Helper functions
-func stringPtr(s string) *string {
-	return &s
-}
